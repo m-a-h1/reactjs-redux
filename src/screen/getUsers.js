@@ -1,42 +1,17 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { Table, Col, Space, Row, Button } from "antd";
 
-import axios from "axios";
-
-import { useDispatch } from "react-redux";
-import { setAllUsers } from "../state/actions";
+import { useSelector, useDispatch } from "react-redux";
+import { fetchUsers } from "../state/reducers/users/users.actions";
 
 function UserListcreen() {
-  const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(false);
-
+  const dispach = useDispatch();
   const navigate = useNavigate();
+  const getAllUsers = fetchUsers();
 
-  const dispatch = useDispatch();
-
-  useEffect(() => {
-    // getUsers();
-  }, []);
-
-  const getUsers = () => {
-    setLoading(true);
-    axios
-      .get(`https://jsonplaceholder.typicode.com/users`)
-      .then((result) => {
-        setLoading(false);
-        console.log("result: ", result);
-        if (result.status === 200) {
-          setUsers(result.data);
-          dispatch(setAllUsers(result.data));
-        }
-      })
-      .catch((e) => {
-        setLoading(false);
-        console.log(e);
-      });
-  };
+  const { isLoading, users, errorMessage } = useSelector((state) => state.users);
 
   const columns = [
     {
@@ -62,16 +37,14 @@ function UserListcreen() {
       <Row justify="center" style={{ marginBottom: "20px" }}>
         <Col>
           <Space>
-            <Button type="primary" loading={loading} onClick={() => getUsers()}>
+            <Button type="primary" loading={isLoading} onClick={() => getAllUsers(dispach)}>
               get users
-            </Button>
-            <Button type="primary" onClick={() => navigate("/usersList")}>
-              gou to another page
             </Button>
           </Space>
         </Col>
       </Row>
-      <Table columns={columns} dataSource={users} />
+      {errorMessage && <p>{errorMessage}</p>}
+      {users && <Table columns={columns} dataSource={users} />}
     </div>
   );
 }
